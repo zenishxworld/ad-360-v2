@@ -902,9 +902,11 @@ const NotificationItem = ({ notification, isInModal = false }: { notification: N
         </div>
       )}
 
+      {/* Floating Sidebar - outside main to prevent stacking context interference */}
+      <FloatingSidebar />
+      
       {/* Main Content */}
-      <main className="relative">
-        <FloatingSidebar />
+      <main>
         <div className="lg:ml-24 min-h-[calc(100vh-3.5rem)] sm:min-h-[calc(100vh-4rem)]">
           <div className="mx-auto px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-8 max-w-7xl">
             <Outlet context={{ selectedCountry }} />
