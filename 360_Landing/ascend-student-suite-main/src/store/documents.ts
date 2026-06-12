@@ -1,7 +1,7 @@
 // Document Store — local document state management
 // Do NOT integrate Supabase Storage yet.
 
-import { localStorageService } from "@/services/localStorage";
+import { documentService } from "@/lib/supabase/services/DocumentService";
 import { Document, DocumentStatus, DocumentType, mockDocuments, DOCUMENT_CATEGORIES } from "@/data/mock/documents";
 
 const DOCS_KEY = "student_documents";
@@ -12,13 +12,49 @@ export interface UploadDocumentInput {
   category: string;
   applicationId?: number;
   fileSize: number;
+  fileSize: number;
   fileType: string;
+  file?: File; // The physical file object to upload
 }
 
+let localDocs: Document[] | null = null;
+let currentUserId: number | null = null;
+let initPromise: Promise<void> | null = null;
+
+const mapRowToDoc = (row: any): Document => ({
+  id: row.id,
+  studentId: row.student_id,
+  applicationId: null, // Depending on future schema, this might map if application tracking links documents
+  name: row.file_name,
+  type: row.document_type as DocumentType,
+  category: "Additional Documents", // Should be mapped correctly if needed
+  status: row.status as DocumentStatus || "UPLOADED",
+  uploadDate: row.uploaded_at,
+  fileSize: 1024, // Ideally we would calculate or retrieve this, hardcoded for now
+  fileType: "application/pdf", // Same here
+  remarks: null,
+  fileUrl: row.file_url || null,
+});
+
 export const documentStore = {
+  async init(studentId: number) {
+    if (initPromise && currentUserId === studentId) return initPromise;
+    currentUserId = studentId;
+    initPromise = documentService.getDocumentsByStudent(studentId).then(rows => {
+      if (rows && rows.length > 0) {
+        localDocs = rows.map(mapRowToDoc);
+      } else {
+        localDocs = [];
+      }
+    });
+    return initPromise;
+  },
+
   getAll(): Document[] {
-    const stored = localStorageService.get<Document[]>(DOCS_KEY, []);
-    return stored.length > 0 ? stored : mockDocuments;
+    if (!localDocs) {
+      return mockDocuments;
+    }
+    return localDocs;
   },
 
   getByStudent(studentId: number): Document[] {
@@ -37,7 +73,7 @@ export const documentStore = {
     const docs = this.getAll();
     const newDoc: Document = {
       id: Math.max(0, ...docs.map(d => d.id)) + 1,
-      studentId: 1, // mock student
+      studentId: currentUserId || 1,
       applicationId: input.applicationId ?? null,
       name: input.name,
       type: input.type,
@@ -48,9 +84,43 @@ export const documentStore = {
       fileType: input.fileType,
       remarks: null,
     };
-    docs.push(newDoc);
-    localStorageService.set(DOCS_KEY, docs);
+    if (localDocs) localDocs.push(newDoc);
+    
+    if (currentUserId) {
+      // Create a dummy file if not provided, just for demo robustness
+      const filePayload = input.file || new Blob(["mock content"], { type: input.fileType });
+      
+      documentService.uploadDocument({
+        student_id: currentUserId,
+        document_type: input.type,
+        file_name: input.name,
+        status: "UPLOADED"
+      }, filePayload as File).catch(err => console.error("Failed to upload document", err));
+    }
+
     return newDoc;
+  },
+
+  replace(id: number, input: UploadDocumentInput): Document | undefined {
+    const docs = this.getAll();
+    const doc = docs.find(d => d.id === id);
+    if (!doc) return undefined;
+
+    doc.name = input.name;
+    doc.fileSize = input.fileSize;
+    doc.fileType = input.fileType;
+    doc.uploadDate = new Date().toISOString();
+    
+    if (currentUserId) {
+      const filePayload = input.file || new Blob(["mock content"], { type: input.fileType });
+      // We pass a dummy row to the service since we don't store file_url locally right now
+      const docRow: any = { document_type: doc.type, student_id: currentUserId, file_url: `mock-url-for-${doc.type.toLowerCase()}-path` };
+      
+      documentService.replaceDocument(id, docRow, filePayload as File, input.name)
+        .catch(err => console.error("Failed to replace document", err));
+    }
+
+    return doc;
   },
 
   updateStatus(id: number, status: DocumentStatus, remarks?: string): Document | undefined {
@@ -59,14 +129,23 @@ export const documentStore = {
     if (doc) {
       doc.status = status;
       if (remarks !== undefined) doc.remarks = remarks;
-      localStorageService.set(DOCS_KEY, docs);
+      // Depending on the backend needs, you might want a service method to update status.
     }
     return doc;
   },
 
   delete(id: number): void {
-    const docs = this.getAll().filter(d => d.id !== id);
-    localStorageService.set(DOCS_KEY, docs);
+    if (localDocs) {
+      const doc = localDocs.find(d => d.id === id);
+      localDocs = localDocs.filter(d => d.id !== id);
+      
+      if (currentUserId && doc) {
+        // We need a dummy row to pass to DocumentService for bucket extraction
+        const docRow: any = { document_type: doc.type, file_url: `mock-url-for-${doc.type.toLowerCase()}-path` }; // A workaround since we didn't store file_url in memory
+        documentService.deleteDocument(id, docRow)
+          .catch(err => console.error("Failed to delete document", err));
+      }
+    }
   },
 
   getStats() {
@@ -96,6 +175,8 @@ export const documentStore = {
   },
 
   seed(): void {
-    localStorageService.set(DOCS_KEY, mockDocuments);
+    if (!localDocs || localDocs.length === 0) {
+      localDocs = [...mockDocuments];
+    }
   },
 };

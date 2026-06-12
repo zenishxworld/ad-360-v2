@@ -16,6 +16,7 @@ export interface Document {
   fileSize: number;
   fileType: string;
   remarks: string | null;
+  fileUrl?: string | null;
 }
 
 export const DOCUMENT_CATEGORIES = {

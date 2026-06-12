@@ -2,6 +2,7 @@ import React, { createContext, useContext, useMemo, useEffect, useState } from "
 import { preferenceStore } from "@/store/preferences";
 import { applicationStore } from "@/store/applications";
 import { savedItemsStore } from "@/store/savedItems";
+import { documentStore } from "@/store/documents";
 
 const mockUser = {
   id: 1,
@@ -45,7 +46,8 @@ export const AuthProvider = ({ children }: any) => {
     Promise.all([
       preferenceStore.init(mockUser.uuid),
       applicationStore.init(mockUser.id),
-      savedItemsStore.init(mockUser.id)
+      savedItemsStore.init(mockUser.id),
+      documentStore.init(mockUser.id)
     ]).finally(() => {
       setIsInitializing(false);
     });

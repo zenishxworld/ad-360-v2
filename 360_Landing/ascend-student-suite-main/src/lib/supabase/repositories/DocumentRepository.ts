@@ -79,4 +79,51 @@ export class DocumentRepository {
       return data;
     }
   }
+
+  async deleteDocument(id: number): Promise<void> {
+    if (DEMO_MODE) {
+      const docs = localStorageService.get<LocalDocument[]>(this.LOCAL_STORAGE_KEY, []);
+      const updatedDocs = docs.filter(d => d.id !== id);
+      localStorageService.set(this.LOCAL_STORAGE_KEY, updatedDocs);
+    } else {
+      if (!supabase) throw new Error('Supabase client not initialized');
+      const { error } = await supabase
+        .from('documents')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+    }
+  }
+
+  async updateDocumentUrl(id: number, url: string): Promise<DocumentRow> {
+    if (DEMO_MODE) {
+      const docs = localStorageService.get<LocalDocument[]>(this.LOCAL_STORAGE_KEY, []);
+      const doc = docs.find(d => d.id === id);
+      if (!doc) throw new Error('Document not found');
+      // Mock documents in local storage don't persist URL explicitly by default, but we simulate it returning.
+      
+      return {
+        id: doc.id,
+        student_id: doc.studentId,
+        document_type: doc.type,
+        file_name: doc.name,
+        file_url: url,
+        status: doc.status,
+        uploaded_at: doc.uploadDate,
+        updated_at: new Date().toISOString(),
+      };
+    } else {
+      if (!supabase) throw new Error('Supabase client not initialized');
+      const { data, error } = await supabase
+        .from('documents')
+        .update({ file_url: url, updated_at: new Date().toISOString() })
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    }
+  }
 }

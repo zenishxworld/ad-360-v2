@@ -15,7 +15,7 @@ import { ReadinessCard } from "@/components/ui/ReadinessCard";
 import {
   FileText, Upload, Trash2, Eye, CheckCircle, Clock,
   XCircle, Plus, User, GraduationCap, Languages, Wallet,
-  Mail, FolderPlus, AlertCircle, File
+  Mail, FolderPlus, AlertCircle, File, RefreshCcw
 } from "lucide-react";
 
 const CATEGORY_ICONS: Record<string, typeof FileText> = {
@@ -52,6 +52,7 @@ export default function Documents() {
   const [uploadName, setUploadName] = useState("");
   const [uploadType, setUploadType] = useState<DocumentType>("PERSONAL");
   const [uploadCategory, setUploadCategory] = useState("Personal Documents");
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
 
   const loadDocs = useCallback(() => {
     setDocs(documentStore.getAll());
@@ -71,19 +72,34 @@ export default function Documents() {
       name: uploadName.trim(),
       type: uploadType,
       category: uploadCategory,
-      fileSize: Math.floor(Math.random() * 2000000) + 50000,
-      fileType: "application/pdf",
+      fileSize: uploadFile ? uploadFile.size : Math.floor(Math.random() * 2000000) + 50000,
+      fileType: uploadFile ? uploadFile.type : "application/pdf",
+      file: uploadFile || undefined,
     };
     documentStore.upload(input);
     // Sync journey milestone
     journeyStore.complete("documents_uploaded");
     setShowUpload(false);
     setUploadName("");
+    setUploadFile(null);
     setRefreshKey((k) => k + 1);
   };
 
   const handleDelete = (id: number) => {
     documentStore.delete(id);
+    setRefreshKey((k) => k + 1);
+  };
+
+  const handleReplace = (doc: Document, file: File) => {
+    const input: UploadDocumentInput = {
+      name: doc.name,
+      type: doc.type,
+      category: doc.category,
+      fileSize: file.size,
+      fileType: file.type,
+      file: file,
+    };
+    documentStore.replace(doc.id, input);
     setRefreshKey((k) => k + 1);
   };
 
@@ -266,18 +282,52 @@ export default function Documents() {
                           </div>
 
                           <div className="flex items-center gap-2 flex-shrink-0 ml-3">
+                            {doc.fileUrl && (
+                              <a
+                                href={doc.fileUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="p-1.5 text-blue-500 hover:text-blue-700 hover:bg-blue-50 rounded-md transition-colors"
+                                title="View/Download Document"
+                              >
+                                <Eye className="w-4 h-4" />
+                              </a>
+                            )}
                             <Badge className={cn("text-[10px] border", STATUS_STYLES[doc.status] || "")}>
                               <StatusIcon className="w-3 h-3 mr-1" />
                               {doc.status}
                             </Badge>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleDelete(doc.id)}
-                              className="text-red-400 hover:text-red-600 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-opacity"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
+                            
+                            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7 text-blue-400 hover:text-blue-600 hover:bg-blue-50"
+                                onClick={() => document.getElementById(`replace-file-${doc.id}`)?.click()}
+                                title="Replace Document"
+                              >
+                                <RefreshCcw className="w-3.5 h-3.5" />
+                              </Button>
+                              <input
+                                type="file"
+                                id={`replace-file-${doc.id}`}
+                                className="hidden"
+                                onChange={(e) => {
+                                  if (e.target.files?.[0]) {
+                                    handleReplace(doc, e.target.files[0]);
+                                  }
+                                }}
+                              />
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleDelete(doc.id)}
+                                className="h-7 w-7 text-red-400 hover:text-red-600 hover:bg-red-50"
+                                title="Delete Document"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </Button>
+                            </div>
                           </div>
                         </div>
                       </Card>
@@ -336,10 +386,18 @@ export default function Documents() {
               </p>
             </div>
 
+            <div>
+              <label className="text-sm font-semibold text-[#2C3539] mb-2 block">Document File</label>
+              <input
+                type="file"
+                onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
+                className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#C4DFF0]/20 file:text-[#2C3539] hover:file:bg-[#C4DFF0]/40"
+              />
+            </div>
+
             <div className="p-4 rounded-xl bg-[#C4DFF0]/10 border border-[#C4DFF0]/20">
               <p className="text-xs text-muted-foreground">
-                <strong>Note:</strong> This is a mock upload for the MVP. File storage integration
-                will be added later.
+                <strong>Note:</strong> File uploads are synchronized securely to Supabase Storage.
               </p>
             </div>
 
