@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 import { useState, useEffect, useCallback } from "react";
 import { documentStore, UploadDocumentInput } from "@/store/documents";
 import { Document, DocumentType, DOCUMENT_CATEGORIES } from "@/data/mock/documents";
+import { journeyStore } from "@/store/journeyStore";
 import {
   FileText, Upload, Trash2, Eye, CheckCircle, Clock,
   XCircle, Plus, User, GraduationCap, Languages, Wallet,
@@ -72,6 +73,8 @@ export default function Documents() {
       fileType: "application/pdf",
     };
     documentStore.upload(input);
+    // Sync journey milestone
+    journeyStore.complete("documents_uploaded");
     setShowUpload(false);
     setUploadName("");
     setRefreshKey((k) => k + 1);

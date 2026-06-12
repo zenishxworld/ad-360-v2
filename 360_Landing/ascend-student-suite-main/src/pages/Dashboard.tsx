@@ -15,6 +15,7 @@ import {
   ArrowRight,
   TrendingUp,
 } from "lucide-react";
+import { JourneyTracker } from "@/components/ui/JourneyTracker";
 import { useAuth } from "@/contexts/AuthContext";
 import { useState, useEffect } from "react";
 import { applicationStore } from "@/store/applications";
@@ -130,6 +131,9 @@ export default function Dashboard() {
           )}
         </div>
       </motion.section>
+
+      {/* Journey Tracker */}
+      <JourneyTracker variant="card" showDemoButton={true} onDemoComplete={() => setMounted(false)} />
 
       {/* Stats Grid */}
       <section className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">

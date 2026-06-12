@@ -14,6 +14,8 @@ import { applicationStore } from "@/store/applications";
 import { StudentPreferences, generateRecommendations, Recommendation, RecommendationTier } from "@/data/mock/recommendations";
 import { mockUniversities, University } from "@/data/mock/universities";
 import { mockCourses, Course } from "@/data/mock/courses";
+import { JourneyTracker } from "@/components/ui/JourneyTracker";
+import { journeyStore } from "@/store/journeyStore";
 import {
   ArrowRight, ChevronLeft, Save, SkipForward, Check, Compass,
   Star, GraduationCap, MapPin, Heart, Send, Sparkles,
@@ -109,6 +111,8 @@ export default function UniversityFinder() {
   };
 
   const handlePreferencesComplete = () => {
+    journeyStore.complete("preferences_completed");
+    journeyStore.complete("recommendations_generated");
     setPrefsSaved(true);
     setActiveSection("results");
   };
@@ -124,6 +128,9 @@ export default function UniversityFinder() {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3 }}
     >
+      {/* Journey Step Banner */}
+      <JourneyTracker variant="banner" className="mb-6" />
+
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-2">
@@ -591,7 +598,9 @@ function ResultsSection() {
 
   const handleSaveUni = (uniId: number, e: React.MouseEvent) => {
     e.stopPropagation();
+    const isSaved = savedItemsStore.isUniversitySaved(uniId);
     savedItemsStore.toggleUniversity(uniId);
+    if (!isSaved) journeyStore.complete("university_saved");
   };
 
   const handleApply = (rec: Recommendation) => {
