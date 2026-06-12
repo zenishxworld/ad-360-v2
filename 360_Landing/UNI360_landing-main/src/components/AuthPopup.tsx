@@ -23,7 +23,7 @@ interface AuthPopupProps {
 }
 
 // Student portal URL for cross-domain SSO redirect
-const STUDENT_PORTAL_URL = "https://students.uni360degree.com";
+const STUDENT_PORTAL_URL = "http://localhost:5174";
 
 // Utility functions for auth state management
 export const AuthUtils = {
