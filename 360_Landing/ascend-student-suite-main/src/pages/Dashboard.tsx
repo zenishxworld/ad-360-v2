@@ -22,6 +22,7 @@ import { applicationStore } from "@/store/applications";
 import { savedItemsStore } from "@/store/savedItems";
 import { documentStore } from "@/store/documents";
 import { preferenceStore } from "@/store/preferences";
+import { readinessStore } from "@/store/readiness";
 import { getSampleRecommendations } from "@/data/mock/recommendations";
 
 type Country = "DE" | "UK" | "IT" | "RS";
@@ -69,6 +70,7 @@ export default function Dashboard() {
   const hasPreferences = preferenceStore.hasPreferences();
   const sampleRecs = getSampleRecommendations();
   const recentApps = applicationStore.getAll().slice(0, 3);
+  const readiness = readinessStore.getReadiness();
 
   const countryData: Record<Country, { greeting: string }> = {
     DE: { greeting: "Guten Tag! Ready for Germany?" },
@@ -328,6 +330,28 @@ export default function Dashboard() {
             >
               See all recommendations <ArrowRight className="w-3.5 h-3.5 ml-1" />
             </Button>
+          </Card>
+
+          {/* Document Readiness Widget */}
+          <Card className="p-5 sm:p-6 bg-white/70 backdrop-blur-sm border-2 border-gray-200/80 shadow-md cursor-pointer hover:border-[#C4DFF0]/50 transition-all" onClick={() => navigate("/documents")}>
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-lg font-semibold text-[#2C3539] flex items-center gap-2">
+                <FileText className="w-5 h-5 text-[#E08D3C]" />
+                Doc Readiness
+              </h3>
+              <Badge className={cn("text-xs border", readiness.isReady ? "bg-emerald-100 text-emerald-800" : "bg-yellow-100 text-yellow-800")}>
+                {readiness.percentage}%
+              </Badge>
+            </div>
+            <p className="text-sm font-medium text-[#2C3539] mb-1">
+              {readiness.isReady ? "Ready to apply!" : `${readiness.missingDocs.length} required document${readiness.missingDocs.length > 1 ? 's' : ''} missing`}
+            </p>
+            <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden mt-2">
+              <div
+                className={cn("h-full rounded-full transition-all", readiness.isReady ? "bg-emerald-500" : "bg-[#E08D3C]")}
+                style={{ width: `${readiness.percentage}%` }}
+              />
+            </div>
           </Card>
 
           {/* Stats Summary */}

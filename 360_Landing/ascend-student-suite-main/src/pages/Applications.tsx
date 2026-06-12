@@ -12,6 +12,7 @@ import { applicationStore, NewApplication } from "@/store/applications";
 import { Application, ApplicationStatus } from "@/data/mock/applications";
 import { mockUniversities } from "@/data/mock/universities";
 import { mockCourses } from "@/data/mock/courses";
+import { readinessStore } from "@/store/readiness";
 import {
   Send, GraduationCap, MapPin, Clock, CheckCircle, XCircle,
   AlertCircle, FileText, Plus, ArrowRight, Trash2, Edit, RefreshCw
@@ -96,7 +97,7 @@ export default function Applications() {
       transition={{ duration: 0.3 }}
     >
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-[#2C3539] mb-1">My Applications</h1>
           <p className="text-muted-foreground text-sm">
@@ -110,6 +111,28 @@ export default function Applications() {
           <Plus className="w-4 h-4 mr-2" /> New Application
         </Button>
       </div>
+
+      {/* Document Readiness Warning Banner */}
+      {!readinessStore.getReadiness().isReady && (
+        <Card className="mb-6 p-4 bg-yellow-50/80 border-2 border-yellow-200 shadow-sm flex items-start gap-3">
+          <AlertCircle className="w-5 h-5 text-yellow-600 shrink-0 mt-0.5" />
+          <div className="flex-1 min-w-0">
+            <h4 className="text-sm font-bold text-yellow-800">Action Required: Complete Your Documents</h4>
+            <p className="text-sm text-yellow-700 mt-1">
+              You must upload all required documents before you can officially submit your applications. 
+              Your profile is currently missing {readinessStore.getReadiness().missingDocs.length} required document(s).
+            </p>
+          </div>
+          <Button 
+            size="sm" 
+            variant="outline" 
+            className="bg-white border-yellow-300 text-yellow-800 hover:bg-yellow-100 shrink-0"
+            onClick={() => navigate("/documents")}
+          >
+            Upload Documents
+          </Button>
+        </Card>
+      )}
 
       {/* Stats Cards */}
       <div className="grid grid-cols-4 gap-3 mb-6">

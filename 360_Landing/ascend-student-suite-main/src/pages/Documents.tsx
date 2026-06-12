@@ -10,6 +10,8 @@ import { useState, useEffect, useCallback } from "react";
 import { documentStore, UploadDocumentInput } from "@/store/documents";
 import { Document, DocumentType, DOCUMENT_CATEGORIES } from "@/data/mock/documents";
 import { journeyStore } from "@/store/journeyStore";
+import { readinessStore } from "@/store/readiness";
+import { ReadinessCard } from "@/components/ui/ReadinessCard";
 import {
   FileText, Upload, Trash2, Eye, CheckCircle, Clock,
   XCircle, Plus, User, GraduationCap, Languages, Wallet,
@@ -134,6 +136,12 @@ export default function Documents() {
         </Button>
       </div>
 
+      <ReadinessCard 
+        showDemoButton={true} 
+        onStateChange={() => setRefreshKey(k => k + 1)} 
+        className="mb-8"
+      />
+
       {/* Stats Bar */}
       <div className="grid grid-cols-4 gap-3 mb-8">
         <Card className="p-3 text-center bg-white/70 border-2 border-gray-200/80">
@@ -160,6 +168,7 @@ export default function Documents() {
           const IconComponent = CATEGORY_ICONS[cat.label] || FileText;
           const catDocs = groupedDocs[cat.label] || [];
           const catCount = categoryCounts[key] || { total: 0, uploaded: 0 };
+          const categoryStatus = readinessStore.getCategoryStatus(cat.label);
 
           return (
             <div key={key}>
@@ -167,9 +176,25 @@ export default function Documents() {
                 <div className="p-2 rounded-xl bg-gradient-to-br from-[#C4DFF0]/20 to-[#C4DFF0]/10 border border-[#C4DFF0]/20">
                   <IconComponent className="w-5 h-5 text-[#2C3539]" />
                 </div>
-                <div>
-                  <h3 className="font-semibold text-[#2C3539]">{cat.label}</h3>
-                  <p className="text-xs text-muted-foreground">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-semibold text-[#2C3539]">{cat.label}</h3>
+                    {categoryStatus !== "Missing" && (
+                      <Badge className={cn(
+                        "text-[10px] px-1.5 py-0 border",
+                        categoryStatus === "Completed" ? "bg-emerald-100 text-emerald-700 border-emerald-200" :
+                        "bg-yellow-100 text-yellow-700 border-yellow-200"
+                      )}>
+                        {categoryStatus}
+                      </Badge>
+                    )}
+                    {categoryStatus === "Missing" && (
+                      <Badge className="text-[10px] px-1.5 py-0 border bg-red-100 text-red-700 border-red-200">
+                        Missing Required
+                      </Badge>
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-0.5">
                     {catCount.uploaded}/{catCount.total} uploaded
                     {" · "}
                     {cat.examples.slice(0, 3).join(", ")}
