@@ -4,6 +4,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AppLayout } from "./layouts/AppLayout";
+import ProtectedRoute from "./components/ProtectedRoute";
+import Login from "./pages/auth/Login";
 import Dashboard from "./pages/Dashboard";
 import Applications from "./pages/Applications";
 import Universities from "./pages/Universities";
@@ -70,7 +72,7 @@ const App = () => {
           <ScrollToTop />
           <Routes>
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
-            <Route path="/login" element={<Navigate to="/dashboard" replace />} />
+            <Route path="/login" element={<Login />} />
             <Route path="/terms" element={<TermsOfService />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/refund" element={<RefundPolicy />} />
@@ -80,8 +82,9 @@ const App = () => {
             <Route path="/ai-profile-evaluation" element={<AIProfileEvaluation />} />
             <Route path="/ai-profile-evaluation/results" element={<AIProfileEvaluationResults />} />
 
-            <Route path="/" element={<AppLayout />}>
-              <Route path="/dashboard" element={<Dashboard />} />
+            <Route element={<ProtectedRoute />}>
+              <Route path="/" element={<AppLayout />}>
+                <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/university-finder" element={<UniversityFinder />} />
               <Route path="applications" element={<Applications />} />
               <Route path="universities" element={<Navigate to="/university-finder?tab=discover" replace />} />
@@ -95,6 +98,7 @@ const App = () => {
               <Route path="profilebuilder" element={<ProfileBuilder />} />
               <Route path="settings" element={<Settings />} />
               <Route path="serbia-interest" element={<SerbiaInterest />} />
+            </Route>
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
