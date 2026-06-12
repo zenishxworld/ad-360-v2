@@ -28,7 +28,25 @@ import Communications from "./pages/Communications";
 import SerbiaLeads from "./pages/SerbiaLeads";
 import SerbiaLeadDetails from "./pages/SerbiaLeadDetails";
 import Interests from "./pages/Interests";
-import { ToastDemo } from "./pages/ToastDemo";
+
+/*
+  Code Splitting Preparation:
+  To optimize initial load times, routes can be lazy-loaded in the future.
+  Example Transition:
+  
+  1. Replace static imports with lazy imports:
+     import React, { Suspense } from 'react';
+     const Dashboard = React.lazy(() => import("./pages/Dashboard"));
+     const Universities = React.lazy(() => import("./pages/Universities"));
+     ...
+     
+  2. Wrap layout or routing element in Suspense:
+     <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]">Loading page...</div>}>
+       <Routes>
+         ...
+       </Routes>
+     </Suspense>
+*/
 
 const queryClient = new QueryClient();
 

@@ -116,7 +116,7 @@ export default function Dashboard() {
           </p>
           {!hasPreferences ? (
             <Button
-              onClick={() => navigate("/preferences")}
+              onClick={() => navigate("/university-finder")}
               className="bg-[#E08D3C] hover:bg-[#c97a2e] text-white rounded-xl px-6 py-2.5 text-sm font-semibold"
             >
               <Compass className="w-4 h-4 mr-2" />
@@ -124,7 +124,7 @@ export default function Dashboard() {
             </Button>
           ) : (
             <Button
-              onClick={() => navigate("/recommendations")}
+              onClick={() => navigate("/university-finder")}
               className="bg-[#E08D3C] hover:bg-[#c97a2e] text-white rounded-xl px-6 py-2.5 text-sm font-semibold"
             >
               <Star className="w-4 h-4 mr-2" />
@@ -145,7 +145,7 @@ export default function Dashboard() {
           description="University matches"
           icon={Star}
           variant="primary"
-          onClick={() => navigate("/recommendations")}
+          onClick={() => navigate("/university-finder")}
         />
         <StatCard
           title="Saved Unis"
@@ -153,7 +153,7 @@ export default function Dashboard() {
           description="Bookmarked"
           icon={Bookmark}
           variant="accent"
-          onClick={() => navigate("/saved")}
+          onClick={() => navigate("/university-finder")}
         />
         <StatCard
           title="Saved Courses"
@@ -161,7 +161,7 @@ export default function Dashboard() {
           description="Bookmarked"
           icon={GraduationCap}
           variant="accent"
-          onClick={() => navigate("/saved")}
+          onClick={() => navigate("/university-finder")}
         />
         <StatCard
           title="Applications"
@@ -192,7 +192,7 @@ export default function Dashboard() {
               <Button
                 variant="outline"
                 className="flex-col h-auto py-4 gap-2 rounded-2xl border-2 hover:border-[#E08D3C]/50 hover:bg-[#fff7f0] transition-all"
-                onClick={() => navigate("/discover")}
+                onClick={() => navigate("/university-finder")}
               >
                 <Compass className="w-5 h-5 text-[#E08D3C]" />
                 <span className="text-xs font-medium">Discover</span>
@@ -200,7 +200,7 @@ export default function Dashboard() {
               <Button
                 variant="outline"
                 className="flex-col h-auto py-4 gap-2 rounded-2xl border-2 hover:border-[#C4DFF0]/50 hover:bg-[#f0f7fd] transition-all"
-                onClick={() => navigate("/saved")}
+                onClick={() => navigate("/university-finder")}
               >
                 <Bookmark className="w-5 h-5 text-[#2C3539]" />
                 <span className="text-xs font-medium">Saved</span>
@@ -245,7 +245,7 @@ export default function Dashboard() {
                 <Button
                   size="sm"
                   className="mt-3 bg-[#E08D3C] hover:bg-[#c97a2e] rounded-xl"
-                  onClick={() => navigate("/discover")}
+                  onClick={() => navigate("/university-finder")}
                 >
                   Start Your First Application
                 </Button>
@@ -303,7 +303,7 @@ export default function Dashboard() {
               <div
                 key={rec.university.id}
                 className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/60 transition-colors cursor-pointer mb-2 last:mb-0"
-                onClick={() => navigate("/recommendations")}
+                onClick={() => navigate("/university-finder")}
               >
                 <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#C4DFF0]/30 to-[#C4DFF0]/10 flex items-center justify-center flex-shrink-0 border border-[#C4DFF0]/20">
                   <GraduationCap className="w-5 h-5 text-[#2C3539]" />
@@ -326,7 +326,7 @@ export default function Dashboard() {
               variant="ghost"
               size="sm"
               className="w-full mt-2 text-[#E08D3C] hover:text-[#c97a2e] text-xs"
-              onClick={() => navigate("/recommendations")}
+              onClick={() => navigate("/university-finder")}
             >
               See all recommendations <ArrowRight className="w-3.5 h-3.5 ml-1" />
             </Button>
@@ -405,7 +405,7 @@ export default function Dashboard() {
                 <Button
                   variant="link"
                   className="px-0 py-0 h-auto text-xs text-[#E08D3C] mt-2 font-semibold"
-                  onClick={() => navigate("/preferences")}
+                  onClick={() => navigate("/university-finder")}
                 >
                   Set Preferences →
                 </Button>

@@ -31,7 +31,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../components/ui/select";
-import { getApplications } from "../services/applications";
+import { getApplications, createDemoApplication } from "../services/applications";
+import { DEMO_MODE } from "../config/demoMode";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -146,6 +147,16 @@ export const Applications: React.FC = () => {
   const [totalCount, setTotalCount] = useState(0);
   const [kpiCounts, setKpiCounts] = useState<Record<string, number>>({});
   const [kpiLoading, setKpiLoading] = useState(true);
+
+  const handleCreateDemoApplication = async () => {
+    try {
+      await createDemoApplication();
+      await loadApplications(currentPage, statusFilter);
+      await fetchKpiCounts();
+    } catch (err) {
+      console.error("Failed to create demo application:", err);
+    }
+  };
 
   // Fetch overall KPI counts using the stageSummary from the API
   const fetchKpiCounts = async () => {
@@ -318,15 +329,28 @@ export const Applications: React.FC = () => {
               {totalCount > 0 ? `${totalCount} total applications across all pages` : "Manage and track student university applications"}
             </p>
           </div>
-          <motion.button
-            whileHover={{ scale: 1.04 }}
-            whileTap={{ scale: 0.97 }}
-            onClick={() => window.open("https://students.uni360degree.com/", "_blank", "noopener,noreferrer")}
-            className="uni-btn-primary inline-flex items-center gap-2 shadow-md text-sm"
-          >
-            <Plus className="h-4 w-4" />
-            New Application
-          </motion.button>
+          <div className="flex items-center gap-3 flex-wrap">
+            {DEMO_MODE && (
+              <motion.button
+                whileHover={{ scale: 1.04 }}
+                whileTap={{ scale: 0.97 }}
+                onClick={handleCreateDemoApplication}
+                className="uni-btn-secondary inline-flex items-center gap-2 shadow-md text-sm"
+              >
+                <Plus className="h-4 w-4" />
+                Create Demo Application
+              </motion.button>
+            )}
+            <motion.button
+              whileHover={{ scale: 1.04 }}
+              whileTap={{ scale: 0.97 }}
+              onClick={() => window.open("https://students.uni360degree.com/", "_blank", "noopener,noreferrer")}
+              className="uni-btn-primary inline-flex items-center gap-2 shadow-md text-sm"
+            >
+              <Plus className="h-4 w-4" />
+              New Application
+            </motion.button>
+          </div>
         </motion.div>
 
         {/* Status Overview Cards */}

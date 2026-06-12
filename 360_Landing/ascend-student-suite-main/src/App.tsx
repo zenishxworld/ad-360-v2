@@ -39,7 +39,28 @@ const ScrollToTop = () => {
 
 const queryClient = new QueryClient();
 
+
+/*
+  Code Splitting Preparation:
+  To optimize initial load times, routes can be lazy-loaded in the future.
+  Example Transition:
+  
+  1. Replace static imports with lazy imports:
+     import React, { Suspense } from 'react';
+     const Dashboard = React.lazy(() => import("./pages/Dashboard"));
+     const UniversityFinder = React.lazy(() => import("./pages/UniversityFinder"));
+     ...
+     
+  2. Wrap layout or routing element in Suspense:
+     <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]">Loading page...</div>}>
+       <Routes>
+         ...
+       </Routes>
+     </Suspense>
+*/
+
 const App = () => {
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
@@ -63,7 +84,7 @@ const App = () => {
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/university-finder" element={<UniversityFinder />} />
               <Route path="applications" element={<Applications />} />
-              <Route path="universities" element={<Universities />} />
+              <Route path="universities" element={<Navigate to="/university-finder?tab=discover" replace />} />
               <Route path="visa" element={<Visa />} />
               <Route path="finances" element={<Finances />} />
               <Route path="documents" element={<Documents />} />

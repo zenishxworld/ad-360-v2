@@ -4,7 +4,8 @@
 // No backend · No Supabase · No Auth (Demo Mode)
 // ─────────────────────────────────────────────────────────────
 
-export const DEMO_MODE = true;
+import { DEMO_MODE } from "../config/demoMode";
+export { DEMO_MODE };
 export const DEMO_ADMIN = { id: "demo-admin-1", name: "Admin User" };
 
 // ── Types ────────────────────────────────────────────────────

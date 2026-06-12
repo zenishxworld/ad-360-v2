@@ -184,7 +184,7 @@ export function AppLayout() {
         setShowNotifications(false);
         setShowAllNotificationsModal(false);
         
-        const validRoutes = ['/dashboard', '/applications', '/profilebuilder', '/universities', '/courses'];
+        const validRoutes = ['/dashboard', '/applications', '/profilebuilder', '/universities', '/courses', '/university-finder'];
         const routePath = notification.actionUrl.split('?')[0];
         
         const isValidRoute = validRoutes.some(route => routePath === route || routePath.startsWith(route + '/'));
