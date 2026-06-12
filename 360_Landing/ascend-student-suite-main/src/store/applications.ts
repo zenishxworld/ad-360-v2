@@ -1,10 +1,36 @@
 // Application Store — local application state management
 // No Supabase, No Backend, No Database
 
-import { localStorageService } from "@/services/localStorage";
+import { applicationService } from "@/lib/supabase/services/ApplicationService";
 import { Application, ApplicationStatus, mockApplications } from "@/data/mock/applications";
 
 const APPS_KEY = "student_applications";
+
+let localApps: Application[] | null = null;
+let currentUserId: number | null = null;
+let initPromise: Promise<void> | null = null;
+
+const mapRowToApp = (row: any): Application => ({
+  id: row.id,
+  studentId: row.student_id,
+  studentName: "Student", 
+  universityId: 1, 
+  universityName: row.university_name,
+  courseId: 1, 
+  courseName: row.course_name,
+  country: "Global", 
+  status: row.status as any,
+  workflowStage: "INITIAL",
+  assignedAdminId: 0,
+  assignedAdminName: "Unassigned",
+  appliedDate: row.created_at,
+  lastUpdated: row.updated_at,
+  targetSemester: "Fall",
+  isUrgent: false,
+  progress: row.status === "ACCEPTED" ? 100 : row.status === "SUBMITTED" ? 50 : 10,
+  documents: [],
+  notes: row.notes || "",
+});
 
 export interface NewApplication {
   studentId: number;
@@ -18,9 +44,25 @@ export interface NewApplication {
 }
 
 export const applicationStore = {
+  async init(studentId: number) {
+    if (initPromise && currentUserId === studentId) return initPromise;
+    currentUserId = studentId;
+    initPromise = applicationService.getApplicationsByStudent(studentId).then(rows => {
+      if (rows && rows.length > 0) {
+        localApps = rows.map(mapRowToApp);
+      } else {
+        localApps = [];
+      }
+    });
+    return initPromise;
+  },
+
   getAll(): Application[] {
-    const stored = localStorageService.get<Application[]>(APPS_KEY, []);
-    return stored.length > 0 ? stored : mockApplications;
+    if (!localApps) {
+      // Fallback for immediate UI render if not init
+      return mockApplications;
+    }
+    return localApps;
   },
 
   getById(id: number): Application | undefined {
@@ -54,8 +96,18 @@ export const applicationStore = {
       documents: [],
       notes: "Application created",
     };
-    apps.push(application);
-    localStorageService.set(APPS_KEY, apps);
+    if (localApps) localApps.push(application);
+
+    if (currentUserId) {
+      applicationService.createApplication({
+        student_id: newApp.studentId,
+        university_name: newApp.universityName,
+        course_name: newApp.courseName,
+        status: "DRAFT",
+        notes: "Application created",
+      }).catch(err => console.error("Failed to create application in DB", err));
+    }
+
     return application;
   },
 
@@ -65,7 +117,9 @@ export const applicationStore = {
     if (app) {
       app.status = status;
       app.lastUpdated = new Date().toISOString();
-      localStorageService.set(APPS_KEY, apps);
+      if (currentUserId) {
+        applicationService.updateStatus(id, status).catch(err => console.error("Failed to update application status", err));
+      }
     }
     return app;
   },
@@ -76,14 +130,18 @@ export const applicationStore = {
     if (app) {
       app.progress = Math.min(100, Math.max(0, progress));
       app.lastUpdated = new Date().toISOString();
-      localStorageService.set(APPS_KEY, apps);
+      // Progress not explicitly tracked in backend, only computed from status
     }
     return app;
   },
 
   delete(id: number): void {
-    const apps = this.getAll().filter(a => a.id !== id);
-    localStorageService.set(APPS_KEY, apps);
+    if (localApps) {
+      localApps = localApps.filter(a => a.id !== id);
+    }
+    if (currentUserId) {
+      applicationService.deleteApplication(id).catch(err => console.error("Failed to delete application", err));
+    }
   },
 
   getStats() {
@@ -101,6 +159,9 @@ export const applicationStore = {
   },
 
   seed(): void {
-    localStorageService.set(APPS_KEY, mockApplications);
+    // Only set mock if empty
+    if (!localApps || localApps.length === 0) {
+      localApps = [...mockApplications];
+    }
   },
 };

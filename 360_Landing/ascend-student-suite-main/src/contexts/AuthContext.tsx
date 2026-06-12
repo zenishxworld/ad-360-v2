@@ -1,4 +1,7 @@
-import React, { createContext, useContext, useMemo } from "react";
+import React, { createContext, useContext, useMemo, useEffect, useState } from "react";
+import { preferenceStore } from "@/store/preferences";
+import { applicationStore } from "@/store/applications";
+import { savedItemsStore } from "@/store/savedItems";
 
 const mockUser = {
   id: 1,
@@ -35,7 +38,19 @@ export const useAuth = () => {
   return context;
 };
 
-export const AuthProvider = ({ children }) => {
+export const AuthProvider = ({ children }: any) => {
+  const [isInitializing, setIsInitializing] = useState(true);
+
+  useEffect(() => {
+    Promise.all([
+      preferenceStore.init(mockUser.uuid),
+      applicationStore.init(mockUser.id),
+      savedItemsStore.init(mockUser.id)
+    ]).finally(() => {
+      setIsInitializing(false);
+    });
+  }, []);
+
   const value = useMemo(
     () => ({
       user: mockUser,
@@ -48,7 +63,7 @@ export const AuthProvider = ({ children }) => {
       resetPassword: async () => {},
       clearError: () => {},
       loginWithGoogle: async () => {},
-      updateUserProfile: async (data) => ({ ...mockUser, ...data }),
+      updateUserProfile: async (data: any) => ({ ...mockUser, ...data }),
       setPassword: async () => ({ success: true }),
       selectedCountry: "DE",
       isCountryToggleDisabled: false,
@@ -56,6 +71,10 @@ export const AuthProvider = ({ children }) => {
     }),
     []
   );
+
+  if (isInitializing) {
+    return <div className="flex items-center justify-center min-h-screen"><div className="animate-pulse">Loading workspace...</div></div>;
+  }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

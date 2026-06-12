@@ -87,4 +87,39 @@ export class ApplicationRepository {
       return data;
     }
   }
+
+  async updateStatus(id: number, status: string): Promise<void> {
+    if (DEMO_MODE) {
+      const apps = localStorageService.get<Application[]>(this.LOCAL_STORAGE_KEY, []);
+      const app = apps.find(a => a.id === id);
+      if (app) {
+        app.status = status as any;
+        app.lastUpdated = new Date().toISOString();
+        localStorageService.set(this.LOCAL_STORAGE_KEY, apps);
+      }
+    } else {
+      if (!supabase) throw new Error('Supabase client not initialized');
+      const { error } = await supabase
+        .from('applications')
+        .update({ status, updated_at: new Date().toISOString() })
+        .eq('id', id);
+
+      if (error) throw error;
+    }
+  }
+
+  async deleteApplication(id: number): Promise<void> {
+    if (DEMO_MODE) {
+      const apps = localStorageService.get<Application[]>(this.LOCAL_STORAGE_KEY, []);
+      localStorageService.set(this.LOCAL_STORAGE_KEY, apps.filter(a => a.id !== id));
+    } else {
+      if (!supabase) throw new Error('Supabase client not initialized');
+      const { error } = await supabase
+        .from('applications')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+    }
+  }
 }

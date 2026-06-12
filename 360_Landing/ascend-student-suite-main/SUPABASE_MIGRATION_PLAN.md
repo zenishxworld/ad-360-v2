@@ -41,15 +41,15 @@ This document outlines the migration strategy for moving data from the current `
 ### 4. `saved_universities`
 - **Current Source:** `localStorage` key `saved_universities`
 - **Migration Path:**
-  - `universityId` ➔ Convert mock ID to `university_name` (TEXT) based on mock data resolution.
+  - `universityId` ➔ `university_id` (INTEGER)
   - `studentId` ➔ Linked to `student_profiles(id)`
   - `savedAt` ➔ `created_at` (TIMESTAMP)
 
 ### 5. `saved_courses`
 - **Current Source:** `localStorage` key `saved_courses`
 - **Migration Path:**
-  - `courseId` ➔ Convert mock ID to `course_name` (TEXT)
-  - `universityId` ➔ Convert mock ID to `university_name` (TEXT)
+  - `courseId` ➔ `course_id` (INTEGER)
+  - `universityId` ➔ `university_id` (INTEGER)
   - `studentId` ➔ Linked to `student_profiles(id)`
   - `savedAt` ➔ `created_at` (TIMESTAMP)
 

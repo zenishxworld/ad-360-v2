@@ -1,10 +1,7 @@
 // Saved Items Store — save/remove universities and courses
 // No Supabase, No Backend, No Database
 
-import { localStorageService } from "@/services/localStorage";
-
-const SAVED_UNIS_KEY = "saved_universities";
-const SAVED_COURSES_KEY = "saved_courses";
+import { savedItemsService } from "@/lib/supabase/services/SavedItemsService";
 
 export interface SavedUniversity {
   universityId: number;
@@ -17,10 +14,28 @@ export interface SavedCourse {
   savedAt: string;
 }
 
+let localSavedUnis: SavedUniversity[] | null = null;
+let localSavedCourses: SavedCourse[] | null = null;
+let currentUserId: number | null = null;
+let initPromise: Promise<void> | null = null;
+
 export const savedItemsStore = {
+  async init(studentId: number) {
+    if (initPromise && currentUserId === studentId) return initPromise;
+    currentUserId = studentId;
+    initPromise = Promise.all([
+      savedItemsService.getSavedUniversities(studentId),
+      savedItemsService.getSavedCourses(studentId),
+    ]).then(([unis, courses]) => {
+      localSavedUnis = unis.map(u => ({ universityId: u.university_id, savedAt: u.created_at }));
+      localSavedCourses = courses.map(c => ({ courseId: c.course_id, universityId: c.university_id, savedAt: c.created_at }));
+    });
+    return initPromise;
+  },
+
   // ── Universities ──────────────────────────────────────────
   getSavedUniversities(): SavedUniversity[] {
-    return localStorageService.get<SavedUniversity[]>(SAVED_UNIS_KEY, []);
+    return localSavedUnis || [];
   },
 
   isUniversitySaved(universityId: number): boolean {
@@ -29,16 +44,21 @@ export const savedItemsStore = {
   },
 
   saveUniversity(universityId: number): void {
-    const saved = this.getSavedUniversities();
     if (!this.isUniversitySaved(universityId)) {
-      saved.push({ universityId, savedAt: new Date().toISOString() });
-      localStorageService.set(SAVED_UNIS_KEY, saved);
+      if (localSavedUnis) localSavedUnis.push({ universityId, savedAt: new Date().toISOString() });
+      if (currentUserId) {
+        savedItemsService.saveUniversity({ student_id: currentUserId, university_id: universityId })
+          .catch(err => console.error("Failed to save university", err));
+      }
     }
   },
 
   removeUniversity(universityId: number): void {
-    const saved = this.getSavedUniversities().filter(s => s.universityId !== universityId);
-    localStorageService.set(SAVED_UNIS_KEY, saved);
+    if (localSavedUnis) localSavedUnis = localSavedUnis.filter(s => s.universityId !== universityId);
+    if (currentUserId) {
+      savedItemsService.removeUniversity(currentUserId, universityId)
+        .catch(err => console.error("Failed to remove university", err));
+    }
   },
 
   toggleUniversity(universityId: number): boolean {
@@ -53,7 +73,7 @@ export const savedItemsStore = {
 
   // ── Courses ──────────────────────────────────────────────
   getSavedCourses(): SavedCourse[] {
-    return localStorageService.get<SavedCourse[]>(SAVED_COURSES_KEY, []);
+    return localSavedCourses || [];
   },
 
   isCourseSaved(courseId: number): boolean {
@@ -62,16 +82,24 @@ export const savedItemsStore = {
   },
 
   saveCourse(courseId: number, universityId: number): void {
-    const saved = this.getSavedCourses();
     if (!this.isCourseSaved(courseId)) {
-      saved.push({ courseId, universityId, savedAt: new Date().toISOString() });
-      localStorageService.set(SAVED_COURSES_KEY, saved);
+      if (localSavedCourses) localSavedCourses.push({ courseId, universityId, savedAt: new Date().toISOString() });
+      if (currentUserId) {
+        savedItemsService.saveCourse({ student_id: currentUserId, course_id: courseId, university_id: universityId })
+          .catch(err => console.error("Failed to save course", err));
+      }
     }
   },
 
   removeCourse(courseId: number): void {
-    const saved = this.getSavedCourses().filter(s => s.courseId !== courseId);
-    localStorageService.set(SAVED_COURSES_KEY, saved);
+    if (localSavedCourses) {
+      const course = localSavedCourses.find(c => c.courseId === courseId);
+      localSavedCourses = localSavedCourses.filter(s => s.courseId !== courseId);
+      if (currentUserId && course) {
+        savedItemsService.removeCourse(currentUserId, courseId, course.universityId)
+          .catch(err => console.error("Failed to remove course", err));
+      }
+    }
   },
 
   toggleCourse(courseId: number, universityId: number): boolean {

@@ -133,21 +133,21 @@ export interface Database {
         Row: {
           id: number
           student_id: number
-          university_name: string
+          university_id: number
           country: string | null
           created_at: string
         }
         Insert: {
           id?: number
           student_id: number
-          university_name: string
+          university_id: number
           country?: string | null
           created_at?: string
         }
         Update: {
           id?: number
           student_id?: number
-          university_name?: string
+          university_id?: number
           country?: string | null
           created_at?: string
         }
@@ -156,22 +156,22 @@ export interface Database {
         Row: {
           id: number
           student_id: number
-          course_name: string
-          university_name: string
+          course_id: number
+          university_id: number
           created_at: string
         }
         Insert: {
           id?: number
           student_id: number
-          course_name: string
-          university_name: string
+          course_id: number
+          university_id: number
           created_at?: string
         }
         Update: {
           id?: number
           student_id?: number
-          course_name?: string
-          university_name?: string
+          course_id?: number
+          university_id?: number
           created_at?: string
         }
       }

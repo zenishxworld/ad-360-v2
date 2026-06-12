@@ -14,6 +14,14 @@ export class ApplicationService {
   async createApplication(app: ApplicationInsert): Promise<ApplicationRow> {
     return this.repository.createApplication(app);
   }
+
+  async updateStatus(id: number, status: string): Promise<void> {
+    return this.repository.updateStatus(id, status);
+  }
+
+  async deleteApplication(id: number): Promise<void> {
+    return this.repository.deleteApplication(id);
+  }
 }
 
 export const applicationService = new ApplicationService();

@@ -21,8 +21,8 @@ export class SavedCourseRepository {
       return saved.map((s, index) => ({
         id: index + 1,
         student_id: studentId,
-        course_name: `Mock Course ${s.courseId}`,
-        university_name: `Mock University ${s.universityId}`,
+        course_id: s.courseId,
+        university_id: s.universityId,
         created_at: s.savedAt,
       }));
     } else {
@@ -53,8 +53,8 @@ export class SavedCourseRepository {
       return {
         id: Math.random(),
         student_id: savedCourse.student_id,
-        course_name: savedCourse.course_name,
-        university_name: savedCourse.university_name,
+        course_id: savedCourse.course_id,
+        university_id: savedCourse.university_id,
         created_at: new Date().toISOString(),
       };
     } else {
@@ -70,7 +70,7 @@ export class SavedCourseRepository {
     }
   }
 
-  async removeCourse(studentId: number, courseName: string, universityName: string): Promise<void> {
+  async removeCourse(studentId: number, courseId: number, universityId: number): Promise<void> {
     if (DEMO_MODE) {
       const saved = localStorageService.get<LocalSavedCourse[]>(this.LOCAL_STORAGE_KEY, []);
       localStorageService.set(this.LOCAL_STORAGE_KEY, saved.slice(0, -1)); // Just remove the last one as mock
@@ -79,7 +79,7 @@ export class SavedCourseRepository {
       const { error } = await supabase
         .from('saved_courses')
         .delete()
-        .match({ student_id: studentId, course_name: courseName, university_name: universityName });
+        .match({ student_id: studentId, course_id: courseId, university_id: universityId });
 
       if (error) throw error;
     }

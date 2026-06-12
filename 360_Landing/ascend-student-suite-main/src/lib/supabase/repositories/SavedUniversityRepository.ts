@@ -20,7 +20,7 @@ export class SavedUniversityRepository {
       return saved.map((s, index) => ({
         id: index + 1,
         student_id: studentId,
-        university_name: `Mock University ${s.universityId}`, // We don't have the name in the local type
+        university_id: s.universityId,
         country: null,
         created_at: s.savedAt,
       }));
@@ -50,7 +50,7 @@ export class SavedUniversityRepository {
       return {
         id: Math.random(),
         student_id: savedUni.student_id,
-        university_name: savedUni.university_name,
+        university_id: savedUni.university_id,
         country: savedUni.country || null,
         created_at: new Date().toISOString(),
       };
@@ -67,7 +67,7 @@ export class SavedUniversityRepository {
     }
   }
 
-  async removeUniversity(studentId: number, universityName: string): Promise<void> {
+  async removeUniversity(studentId: number, universityId: number): Promise<void> {
     if (DEMO_MODE) {
       // In Demo mode, we just clear everything for simplicity if we can't match by ID
       // Real app uses universityId. This is a shim for the new string-based schema.
@@ -78,7 +78,7 @@ export class SavedUniversityRepository {
       const { error } = await supabase
         .from('saved_universities')
         .delete()
-        .match({ student_id: studentId, university_name: universityName });
+        .match({ student_id: studentId, university_id: universityId });
 
       if (error) throw error;
     }

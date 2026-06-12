@@ -20,8 +20,8 @@ export class SavedItemsService {
     return this.universityRepository.saveUniversity(savedUni);
   }
 
-  async removeUniversity(studentId: number, universityName: string): Promise<void> {
-    return this.universityRepository.removeUniversity(studentId, universityName);
+  async removeUniversity(studentId: number, universityId: number): Promise<void> {
+    return this.universityRepository.removeUniversity(studentId, universityId);
   }
 
   async getSavedCourses(studentId: number): Promise<SavedCourseRow[]> {
@@ -32,8 +32,8 @@ export class SavedItemsService {
     return this.courseRepository.saveCourse(savedCourse);
   }
 
-  async removeCourse(studentId: number, courseName: string, universityName: string): Promise<void> {
-    return this.courseRepository.removeCourse(studentId, courseName, universityName);
+  async removeCourse(studentId: number, courseId: number, universityId: number): Promise<void> {
+    return this.courseRepository.removeCourse(studentId, courseId, universityId);
   }
 }
 

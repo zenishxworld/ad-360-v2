@@ -53,4 +53,28 @@ export class AdminNotesRepository {
       return data;
     }
   }
+
+  async updateNote(id: number, updatedNote: string): Promise<AdminNoteRow> {
+    if (DEMO_MODE) {
+      const notes = localStorageService.get<AdminNoteRow[]>(this.LOCAL_STORAGE_KEY, []);
+      const index = notes.findIndex(n => n.id === id);
+      if (index === -1) throw new Error('Note not found');
+      
+      notes[index].note = updatedNote;
+      localStorageService.set(this.LOCAL_STORAGE_KEY, notes);
+      
+      return notes[index];
+    } else {
+      if (!supabase) throw new Error('Supabase client not initialized');
+      const { data, error } = await supabase
+        .from('admin_notes')
+        .update({ note: updatedNote })
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    }
+  }
 }

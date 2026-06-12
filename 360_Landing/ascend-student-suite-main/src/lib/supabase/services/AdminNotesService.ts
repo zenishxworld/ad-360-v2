@@ -14,6 +14,10 @@ export class AdminNotesService {
   async addNote(note: AdminNoteInsert): Promise<AdminNoteRow> {
     return this.repository.addNote(note);
   }
+
+  async updateNote(id: number, note: string): Promise<AdminNoteRow> {
+    return this.repository.updateNote(id, note);
+  }
 }
 
 export const adminNotesService = new AdminNotesService();
